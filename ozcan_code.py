@@ -80,3 +80,32 @@ travel_time_matrix = [
     [4, 8, 5, 3, 9],
     [9, 4, 7, 2, 5]
 ]
+
+# PuLP modeli oluşturma
+model = pulp.LpProblem("Multi-Objective Drone Routing", pulp.LpMaximize)
+
+# Değişkenler
+x = [[pulp.LpVariable(f"x_{i}_{j}", cat=pulp.LpBinary) for j in range(num_time_windows)] for i in range(num_targets)]
+
+# Hedef fonksiyonu (Toplanan bilgiyi maksimize et, seyahat süresini minimize et)
+objective = pulp.lpSum(x[i][j] * (info_collected[i] - travel_time_matrix[i][j]) for i in range(num_targets) for j in range(num_time_windows))
+model += objective
+
+# Kısıtlar
+for i in range(num_targets):
+    model += pulp.lpSum(x[i]) <= 1  # Her hedef yalnızca bir kez ziyaret edilebilir
+for j in range(num_time_windows):
+    model += pulp.lpSum(x[i][j] for i in range(num_targets)) <= 1  # Her zaman penceresinde yalnızca bir iha bulunabilir
+model += pulp.lpSum(x[i][j] * max_capacity for i in range(num_targets) for j in range(num_time_windows)) <= max_capacity  # Kapasite kısıtı
+
+# Modeli çözme
+model.solve()
+
+# Sonuçları yazdırma
+print("Optimal Rota:")
+for i in range(num_targets):
+    for j in range(num_time_windows):
+        if pulp.value(x[i][j]) == 1:
+            print(f"Hedef {i+1} - Zaman Penceresi {j+1}")
+
+print(f"Toplanan Bilgi: {pulp.value(objective):.2f}")
