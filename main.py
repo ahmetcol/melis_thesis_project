@@ -78,8 +78,9 @@ def find_info_durations(path: list):
             time += duration_matrix[prev_node][node]
 
         # Check for if time is between time windows
-        if not (time_windows[node][0] <= time <= time_windows[node][-1]):
-            return info, time, False
+        if node != "-1":  # The last node has not any time window
+            if not (time_windows[node][0] <= time <= time_windows[node][-1]):
+                return info, time, False
 
         # Add information duration
         time += info_durations.get(node, 0)
@@ -93,6 +94,7 @@ def main():
     nodes = list(duration_matrix.keys())
     graph = Graph(len(nodes))
     list_of_paths = graph.AllPaths(nodes[0], nodes[-1])
+    # breakpoint()
 
     # Find time and information amount for each path and store them inside DataFrame
     for p in list_of_paths:
