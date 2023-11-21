@@ -102,6 +102,8 @@ def main():
         if is_applicable:
             df.loc[len(df.index)] = [p, time, info]
 
+    # TODO: sıralama yaptırt
+
     print(df)
 
 
